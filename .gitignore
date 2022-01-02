@@ -157,3 +157,6 @@ fabric.properties
 
 # Ignore the default SQLite database
 db*.sqlite3
+
+# Ignore Data Files
+data/
