@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from game_track_app.models import *
-from tools import generate_dataset
+from tools import *
 
 
 class Command(BaseCommand):
@@ -94,40 +94,81 @@ class Command(BaseCommand):
                 temp.user = user
                 temp.save()
 
+    def _create_game_events(self, data):
+        user = User.objects.get(name="John Bucknam")
+        for event in data:
+            game = Game.objects.get(name=event["game"])
+            stat = GameStat.objects.get(user=user, game=game)
+            temp = GameEvent(stat=stat, date=event["date"], notes=event["notes"])
+            temp.save()
+
+    def _create_reviewers(self, data):
+        Reviewer.objects.bulk_create([Reviewer(name=name) for name in data.keys()])
+
+    def _create_recommendations(self, data):
+        for reviewer in data:
+            for recommendation in data[reviewer]:
+                if not Game.objects.filter(name=recommendation["game"]).exists():
+                    print("New Game:", recommendation["game"])
+                    temp = Game(name=recommendation["game"])
+                    temp.save()
+
+                temp = Recommendation(reviewer=Reviewer.objects.get(name=reviewer),
+                                      game=Game.objects.get(name=recommendation["game"]),
+                                      notes=recommendation["notes"])
+                temp.save()
+
     def handle(self, *args, **options):
-        data = generate_dataset(filename="data/Video Games-Master View.csv")
+        game_data = GameDataImporter().generate_dataset(filename="data/Video Games-Master View.csv")
+        event_data = EventDataImporter().generate_dataset(filename="data/Schedule-Grid view.csv")
+        recommend_data = RecommendationDataImporter().generate_dataset(filename="data/Recommendations-Grid view.csv")
 
         print("------------------------")
         print("Create Developers")
         print("------------------------")
-        self._create_devs(data)
+        self._create_devs(game_data)
 
         print("------------------------")
         print("Create Consoles")
         print("------------------------")
-        self._create_consoles(data)
+        self._create_consoles(game_data)
 
         print("------------------------")
         print("Create Series")
         print("------------------------")
-        self._create_series(data)
+        self._create_series(game_data)
 
         print("------------------------")
         print("Create Genres")
         print("------------------------")
-        self._create_genres(data)
+        self._create_genres(game_data)
 
         print("------------------------")
         print("Create Games")
         print("------------------------")
-        self._create_games(data)
+        self._create_games(game_data)
 
         print("------------------------")
         print("Create User")
         print("------------------------")
-        self._create_user(data)
+        self._create_user(game_data)
 
         print("------------------------")
         print("Create Game Statuses")
         print("------------------------")
-        self._create_game_stats(data)
+        self._create_game_stats(game_data)
+
+        print("------------------------")
+        print("Create Game Events")
+        print("------------------------")
+        self._create_game_events(event_data)
+
+        print("------------------------")
+        print("Create Reviewers")
+        print("------------------------")
+        self._create_reviewers(recommend_data)
+
+        print("------------------------")
+        print("Create Recommendations")
+        print("------------------------")
+        self._create_recommendations(recommend_data)

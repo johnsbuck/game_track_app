@@ -1,61 +1,60 @@
 import csv
-import json
-import re
 
 
-def generate_object(columns, new_data):
-    output = {x: y for x, y in zip(columns, new_data)}
+class GameDataImporter:
 
-    # Remove first half of Game Status string
-    if len(output["Game Status"]) > 0:
-        output["Game Status"] = output["Game Status"].split(" - ")[1]
-    else:
-        output["Game Status"] = output["Game Status"]
+    def generate_dataset(self, filename="../data/Video Games-Master View.csv", encoding="utf-8-sig"):
+        reader = csv.reader(open(filename, 'r', encoding=encoding))
+        columns = next(reader)
 
-    # Split multiple listings
-    if len(output["Consoles"]) > 0:
-        output["Consoles"] = output["Consoles"].split(',')
-    else:
-        output["Consoles"] = [output["Consoles"]]
+        data = []
+        for line in reader:
+            data.append(self.generate_object(columns, line))
 
-    if len(output["Developers"]) > 0:
-        output["Developers"] = output["Developers"].split(',')
-    else:
-        output["Developers"] = [output["Developers"]]
+        return data
 
-    if len(output["Genres"]) > 0:
-        output["Genres"] = output["Genres"].split(',')
-    else:
-        output["Genres"] = [output["Genres"]]
+    def generate_object(self, columns, new_data):
+        output = {x: y for x, y in zip(columns, new_data)}
 
-    if len(output["Series"]) > 0:
-        output["Series"] = output["Series"].split(',')
-    else:
-        output["Series"] = [output["Series"]]
+        # Remove first half of Game Status string
+        if len(output["Game Status"]) > 0:
+            output["Game Status"] = output["Game Status"].split(" - ")[1]
+        else:
+            output["Game Status"] = output["Game Status"]
 
-    # Set owned to true or false
-    output["Owned"] = output["Owned"] == "checked"
+        # Split multiple listings
+        if len(output["Consoles"]) > 0:
+            output["Consoles"] = output["Consoles"].split(',')
+        else:
+            output["Consoles"] = [output["Consoles"]]
 
-    # Delete unnecessary columns
-    del output["Calendar"]
-    del output["Recommendations"]
+        if len(output["Developers"]) > 0:
+            output["Developers"] = output["Developers"].split(',')
+        else:
+            output["Developers"] = [output["Developers"]]
 
-    return output
+        if len(output["Genres"]) > 0:
+            output["Genres"] = output["Genres"].split(',')
+        else:
+            output["Genres"] = [output["Genres"]]
 
+        if len(output["Series"]) > 0:
+            output["Series"] = output["Series"].split(',')
+        else:
+            output["Series"] = [output["Series"]]
 
-def generate_dataset(filename="../data/Video Games-Master View.csv", encoding="utf-8-sig"):
-    reader = csv.reader(open(filename, 'r', encoding=encoding))
-    columns = next(reader)
+        # Set owned to true or false
+        output["Owned"] = output["Owned"] == "checked"
 
-    data = []
-    for line in reader:
-        data.append(generate_object(columns, line))
+        # Delete unnecessary columns
+        del output["Calendar"]
+        del output["Recommendations"]
 
-    return data
+        return output
 
 
 def main():
-    data = generate_dataset()
+    data = GameDataImporter.generate_dataset()
 
 
 if __name__ == "__main__":

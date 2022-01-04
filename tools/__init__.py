@@ -1,3 +1,6 @@
-from .game_csv_import import generate_dataset, generate_object
+from .game_csv_import import GameDataImporter
+from .event_csv_import import EventDataImporter
+from .recommendation_csv_import import RecommendationDataImporter
 
-__all__ = ["generate_dataset", "generate_object"]
+
+__all__ = ["GameDataImporter", "EventDataImporter", "RecommendationDataImporter"]
